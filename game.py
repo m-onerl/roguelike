@@ -3,8 +3,6 @@ import pgzrun
 game_state = 'menu'
 
 
-
-
 class Animation:
     def __init__(self, frames, speed=0.2):
         self.frames = frames
@@ -22,6 +20,19 @@ class Animation:
 
         return self.frames[self.current_frame]
     
+ 
+class Player:
+    #TODO how plater can move speed and checking borders of map
+    # coursor there is where w shot player still shooting
+    # can heal get some hp from floor
+    pass
+
+class Zombie:
+    #TODO randomize of  moving zombie to catch player but have to make some wreid move random move for every one and sometimes dodges
+    # about 40 zombies respown one stronger one have X2 hp and X1,3 of DMG
+    pass
+
+
 walk_anim = Animation(["player_walk1", "player_walk2"], speed=0.15)
 player = Actor(walk_anim.get_current_image())
 player.x = 400
@@ -37,31 +48,19 @@ def draw():
         
     elif game_state == 'game':
         screen.draw.text('Game running', center = (50, 20), fontsize = 20, color = 'green' )
+        player.draw()
+        
+# function for update of animation
+def update(dt):
+    if game_state == "game":
+        walk_anim.update(dt)
+        player.image = walk_anim.get_current_image()
 
 def on_key_down(key):
     global game_state
-    
-    if game_state == 'menu':
-        if key == keys.RETURN:
-            game_state = 'game'
-        elif key == keys.ESCAPE:
-            exit()
-            
-    elif game_state == 'game':
-        if key == keys.ESCAPE:
-            game_state = 'menu'
+    if game_state == "menu" and key == keys.RETURN:
+        game_state = "game"
+    elif key == keys.ESCAPE:
+        game_state = "menu" if game_state == "game" else exit()
             
 pgzrun.go()
-
-class Player:
-    #TODO how plater can move speed and checking borders of map
-    # coursor there is where w shot player still shooting
-    # can heal get some hp from floor
-    pass
-
-class Zombie:
-    #TODO randomize of  moving zombie to catch player but have to make some wreid move random move for every one and sometimes dodges
-    # about 40 zombies respown one stronger one have X2 hp and X1,3 of DMG
-    pass
-
-
