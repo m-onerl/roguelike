@@ -116,9 +116,9 @@ class Zombie:
         self.actor.y = y
         self.speed = 2
         self.hp = 50
-        self.dmg = 10
+        self.damage = 10
         self.attack_cooldown = 0 
-        self.attack_rate = 1.0 
+        self.attack_rate = 0.5 
     
     def update(self, dt, player):
         dx = player.actor.x - self.actor.x
