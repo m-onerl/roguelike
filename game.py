@@ -31,11 +31,13 @@ class Player:
     def __init__(self, x, y):
         self.anim_down = Animation(['player_walk1', 'player_walk2'], speed = 0.15)
         self.anim_up = Animation(['player_walk_back1', 'player_walk_back2'], speed = 0.15)
-        self.anim_side = Animation(['player_walk_side1', 'player_walk_side2'], speed = 0.15)
+        self.anim_side_right = Animation(['player_walk_side_right1', 'player_walk_side_right2'], speed = 0.15)
+        self.anim_side_left = Animation(['player_walk_side_left1', 'player_walk_side_left2'], speed = 0.15)
         
         self.neutral_down = "player_neutral"
         self.neutral_up = "player_neutral_back"
-        self.neutral_side = "player_neutral_side"
+        self.neutral_side_left = "player_neutral_side_left"
+        self.neutral_side_right = "player_neutral_side_right"
         
         self.current_anim = self.anim_down
         self.actor = Actor(self.neutral_down)
@@ -45,7 +47,7 @@ class Player:
         self.speed = 5
         self.moving = False
         self.facing_right = True
-        self.direction = 'down'
+        self.direction = "down"
         
     def update(self, dt):
         self.moving = False
@@ -64,12 +66,12 @@ class Player:
             self.actor.x -= self.speed
             self.moving = True
             self.direction = "left"
-            self.current_anim = self.anim_side
+            self.current_anim = self.anim_side_left
         if keyboard.d:
             self.actor.x += self.speed
             self.moving = True
             self.direction = "right"
-            self.current_anim = self.anim_side
+            self.current_anim = self.anim_side_right
         
         self.actor.x = max(20, min(WIDTH - 20, self.actor.x))
         self.actor.y = max(20, min(HEIGHT - 20, self.actor.y))
@@ -77,11 +79,16 @@ class Player:
         if self.moving:
             self.current_anim.update(dt)
             self.actor.image = self.current_anim.get_current_image()
-
-        if self.facing_right:
-            self.actor.angle = 0
         else:
-            self.actor.angle = 0  
+            if self.direction == "up":
+                self.actor.image = self.neutral_up
+            elif self.direction == "down":
+                self.actor.image = self.neutral_down
+            elif self.direction == "left":
+                self.actor.image = self.neutral_side_left
+            elif self.direction == "right":
+                self.actor.image = self.neutral_side_right
+    
             
     def draw(self):
         if self.facing_right:
@@ -102,12 +109,12 @@ class Zombie:
 def draw():
     screen.fill((20, 20, 30))
     
-    if game_state == 'menu':
+    if game_state == "menu":
         screen.draw.text('ZOMBIE APOCALYPSE', center = (400, 150),fontname = 'bloody', fontsize = 60, color = 'red' )
         screen.draw.text('Press ENTER to start', center = (400, 300), fontsize = 30, color = 'white' )
         screen.draw.text('If you scared press ESC to exit', center = (400, 500), fontsize = 20, color = 'gray' )
         
-    elif game_state == 'game':
+    elif game_state == "game":
         screen.draw.text('Game running', center = (50, 20), fontsize = 20, color = 'green' )
         player.draw()
         
@@ -124,3 +131,4 @@ def on_key_down(key):
         game_state = "menu" if game_state == "game" else exit()
             
 pgzrun.go()
+
