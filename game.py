@@ -29,38 +29,54 @@ class Animation:
  
 class Player:
     def __init__(self, x, y):
-        self.walk_anim = Animation(['player_walk1', 'player_walk2', 'player_walk3', 'player_walk4'], speed = 0.15)
-        self.actor = Actor(self.walk_anim.get_current_image())
+        self.anim_down = Animation(['player_walk1', 'player_walk2'], speed = 0.15)
+        self.anim_up = Animation(['player_walk_back1', 'player_walk_back2'], speed = 0.15)
+        self.anim_side = Animation(['player_walk_side1', 'player_walk_side2'], speed = 0.15)
+        
+        self.neutral_down = "player_neutral"
+        self.neutral_up = "player_neutral_back"
+        self.neutral_side = "player_neutral_side"
+        
+        self.current_anim = self.anim_down
+        self.actor = Actor(self.neutral_down)
+        self.actor.x = x
         self.actor.x = x
         self.actor.y = y
         self.speed = 5
         self.moving = False
         self.facing_right = True
-    
+        self.direction = 'down'
+        
     def update(self, dt):
         self.moving = False
         
         if keyboard.w:
             self.actor.y -= self.speed
             self.moving = True
+            self.direction = "up"
+            self.current_anim = self.anim_up
         if keyboard.s:
             self.actor.y += self.speed
             self.moving = True
+            self.direction = "down"
+            self.current_anim = self.anim_down
         if keyboard.a:
             self.actor.x -= self.speed
             self.moving = True
-            self.facing_right = False
+            self.direction = "left"
+            self.current_anim = self.anim_side
         if keyboard.d:
             self.actor.x += self.speed
             self.moving = True
-            self.facing_right = True
-
+            self.direction = "right"
+            self.current_anim = self.anim_side
+        
         self.actor.x = max(20, min(WIDTH - 20, self.actor.x))
         self.actor.y = max(20, min(HEIGHT - 20, self.actor.y))
  
         if self.moving:
-            self.walk_anim.update(dt)
-            self.actor.image = self.walk_anim.get_current_image()
+            self.current_anim.update(dt)
+            self.actor.image = self.current_anim.get_current_image()
 
         if self.facing_right:
             self.actor.angle = 0
