@@ -110,17 +110,18 @@ class Zombie:
         self.anim_side_right = Animation(['zombie_walk_side_right1', 'zombie_walk_side_right2'], speed = 0.10)
         self.anim_side_left = Animation(['zombie_walk_side_left1', 'zombie_walk_side_left2'], speed = 0.10)
     
-        self.courrent_anim = self.anim_down
+        self.current_anim = self.anim_down
         self.actor = Actor('zombie_walk1')
         self.actor.x = x 
         self.actor.y = y
+        self.radius = 3
         self.speed = 2
         self.hp = 50
-        self.damage = 10
+        self.damage = 5
         self.attack_cooldown = 0 
         self.attack_rate = 0.5 
     
-    def update(self, dt, player):
+    def update(self, dt, player, all_zombies):
         dx = player.actor.x - self.actor.x
         dy = player.actor.y - self.actor.y
         distance = math.sqrt(dx * dx + dy * dy)
@@ -128,14 +129,39 @@ class Zombie:
         if self.attack_cooldown > 0 :
             self.attack_cooldown -= dt
             
-        if distance < 40:
+        if distance < 10:
             self.attack(player)
         elif distance > 0:
             dx = dx / distance
             dy = dy / distance
             
-            self.actor.x += dx * self.speed
-            self.actor.y += dy * self.speed
+
+            new_x = self.actor.x + dx * self.speed
+            new_y = self.actor.y + dy * self.speed
+
+            can_move = True
+            for other in all_zombies:
+                if other is self:
+                    continue
+                    
+                dist_to_other = math.sqrt(
+                    (new_x - other.actor.x) ** 2 + 
+                    (new_y - other.actor.y) ** 2
+                )
+                
+                if dist_to_other < self.radius * 2:
+                    can_move = False
+                    push_dx = self.actor.x - other.actor.x
+                    push_dy = self.actor.y - other.actor.y
+                    push_dist = math.sqrt(push_dx * push_dx + push_dy * push_dy)
+                    if push_dist > 0:
+                        self.actor.x += (push_dx / push_dist) * 0.5
+                        self.actor.y += (push_dy / push_dist) * 0.5
+                    break
+            
+            if can_move:
+                self.actor.x = new_x
+                self.actor.y = new_y
             
             if abs(dx) > abs(dy):
                 if dx > 0:
@@ -159,14 +185,14 @@ class Zombie:
         if self.attack_cooldown <= 0:
             player.hp -= self.damage
             self.attack_cooldown = self.attack_rate
-            print(f"Zombie attacks! Player HP: {player.hp}")
+            print(f"Player HP: {player.hp}")
     
     def draw(self):
         self.actor.draw()
         
 zombies = [
     Zombie(100, 100),
-    Zombie(700, 500),
+    Zombie(400, 200),
     Zombie(700, 500),
 ]
                 
@@ -197,7 +223,7 @@ def update(dt):
     if game_state == "game":
         player.update(dt)
         for zombie in zombies:
-            zombie.update(dt, player)
+            zombie.update(dt, player, zombies)
             
         if player.hp <= 0:
             game_state = "menu"
