@@ -1,4 +1,5 @@
 import pgzrun
+import math
 
 WIDTH = 800
 HEIGHT = 600
@@ -45,9 +46,12 @@ class Player:
         self.actor.x = x
         self.actor.y = y
         self.speed = 5
+        self.hp = 100
+        self.max_hp = 100
         self.moving = False
         self.facing_right = True
         self.direction = "down"
+        
         
     def update(self, dt):
         self.moving = False
@@ -100,10 +104,72 @@ class Player:
 player = Player(400, 300)
 
 class Zombie:
-    #TODO randomize of  moving zombie to catch player but have to make some wreid move random move for every one and sometimes dodges
-    # about 40 zombies respown one stronger one have X2 hp and X1,3 of DMG
-    pass
+    def __init__(self, x, y):
+        self.anim_down = Animation(['zombie_walk1', 'zombie_walk2'], speed = 0.10)
+        self.anim_up = Animation(['zombie_walk_back1', 'zombie_walk_back2'], speed = 0.10)
+        self.anim_side_right = Animation(['zombie_walk_side_right1', 'zombie_walk_side_right2'], speed = 0.10)
+        self.anim_side_left = Animation(['zombie_walk_side_left1', 'zombie_walk_side_left2'], speed = 0.10)
+    
+        self.courrent_anim = self.anim_down
+        self.actor = Actor('zombie_walk1')
+        self.actor.x = x 
+        self.actor.y = y
+        self.speed = 2
+        self.hp = 50
+        self.dmg = 10
+        self.attack_cooldown = 0 
+        self.attack_rate = 1.0 
+    
+    def update(self, dt, player):
+        dx = player.actor.x - self.actor.x
+        dy = player.actor.y - self.actor.y
+        distance = math.sqrt(dx * dx + dy * dy)
 
+        if self.attack_cooldown > 0 :
+            self.attack_cooldown -= dt
+            
+        if distance < 40:
+            self.attack(player)
+        elif distance > 0:
+            dx = dx / distance
+            dy = dy / distance
+            
+            self.actor.x += dx * self.speed
+            self.actor.y += dy * self.speed
+            
+            if abs(dx) > abs(dy):
+                if dx > 0:
+                    self.direction = "right"
+                    self.current_anim = self.anim_side_right
+                else:
+                    self.direction = "left"
+                    self.current_anim = self.anim_side_left
+            else:
+                if dy > 0:
+                    self.direction = "down"
+                    self.current_anim = self.anim_down
+                else:
+                    self.direction = "up"
+                    self.current_anim = self.anim_up
+            
+            self.current_anim.update(dt)
+            self.actor.image = self.current_anim.get_current_image()
+    
+    def attack(self, player):
+        if self.attack_cooldown <= 0:
+            player.hp -= self.damage
+            self.attack_cooldown = self.attack_rate
+            print(f"Zombie attacks! Player HP: {player.hp}")
+    
+    def draw(self):
+        self.actor.draw()
+        
+zombies = [
+    Zombie(100, 100),
+    Zombie(700, 500),
+    Zombie(700, 500),
+]
+                
 
 
 def draw():
@@ -115,14 +181,30 @@ def draw():
         screen.draw.text('If you scared press ESC to exit', center = (400, 500), fontsize = 20, color = 'gray' )
         
     elif game_state == "game":
-        screen.draw.text('Game running', center = (50, 20), fontsize = 20, color = 'green' )
         player.draw()
+        for zombie in zombies:
+            zombie.draw()
+            
+        screen.draw.filled_rect(Rect((10, 10), (200, 20)), 'darkred')
+        hp_width = (player.hp / player.max_hp) * 200
+        screen.draw.filled_rect(Rect((10, 10), (hp_width, 20)), 'red')
+        screen.draw.text(f'HP: {player.hp}/{player.max_hp}', (15, 12), fontsize=16, color='white')
+    
         
 # function for update of animation
 def update(dt):
+    global game_state
     if game_state == "game":
         player.update(dt)
-        
+        for zombie in zombies:
+            zombie.update(dt, player)
+            
+        if player.hp <= 0:
+            game_state = "menu"
+            player.hp = player.max_hp
+            player.actor.x = 400
+            player.actor.y = 300
+            
 def on_key_down(key):
     global game_state
     if game_state == "menu" and key == keys.RETURN:
