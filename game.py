@@ -1,19 +1,19 @@
 import pgzrun
 import math
 
-# window size
+
 WIDTH = 800
 HEIGHT = 600
 
-# starting state of game 
 game_state = 'menu'
 music_on = True
 
-# Menu buttons
+
 btn_start = Rect((300, 250), (200, 50))
 btn_music = Rect((300, 320), (200, 50))
 btn_exit = Rect((300, 390), (200, 50))
 
+grass = Actor('grass')
 
 class Animation:
     def __init__(self, frames, speed=0.2):
@@ -42,7 +42,7 @@ class Weapon:
         self.actor = Actor('baseball')
         self.angle = 0
         self.distance = 10  
-        self.offset_y = -10
+        self.offset_y =- 10
         self.is_swinging = False
         self.swing_speed = 600 
         self.swing_angle = 0
@@ -71,7 +71,7 @@ class Weapon:
             rad = math.radians(self.swing_angle)
             self.actor.x = self.owner.actor.x + math.cos(rad) * self.distance
             self.actor.y = self.owner.actor.y + math.sin(rad) * self.distance
-            self.actor.angle = -self.swing_angle + 90  
+            self.actor.angle =- self.swing_angle + 90  
         else:
 
             self.actor.x = self.owner.actor.x
@@ -107,12 +107,11 @@ class Player:
         self.anim_up = Animation(['player/player_walk_back1', 'player/player_walk_back2'], speed=0.15)
         self.anim_side_right = Animation(['player/player_walk_side_right1', 'player/player_walk_side_right2'], speed=0.15)
         self.anim_side_left = Animation(['player/player_walk_side_left1', 'player/player_walk_side_left2'], speed=0.15)
-        
-        # using neutral + walk1 as frames
+
         self.idle_down = Animation(['player/player_neutral', 'player/player_walk1'], speed=0.6)
         self.idle_up = Animation(['player/player_neutral_back', 'player/player_walk_back1'], speed=0.6)
         self.idle_side_left = Animation(['player/player_neutral_side_left', 'player/player_walk_side_left1'], speed=0.6)
-        self.idle_side_right = Animation(['player/player_neutral_side_right', 'player/player_walk_side_right1'], speed=0.6)
+        self.idle_side_right = Animation(['player/player_neutral_side_right','player/player_walk_side_right1'], speed=0.6)
         
         self.current_anim = self.anim_down
         self.current_idle = self.idle_down
@@ -185,18 +184,17 @@ class Zombie:
         self.anim_up = Animation(['enemy/zombie_walk_back1', 'enemy/zombie_walk_back2'], speed=0.10)
         self.anim_side_right = Animation(['enemy/zombie_walk_side_right1', 'enemy/zombie_walk_side_right2'], speed=0.10)
         self.anim_side_left = Animation(['enemy/zombie_walk_side_left1', 'enemy/zombie_walk_side_left2'], speed=0.10)
-        
-        # using existing walk frames
+
         self.idle_anim = Animation(['enemy/zombie_walk1', 'enemy/zombie_walk2'], speed=0.4)
     
         self.current_anim = self.anim_down
         self.actor = Actor('enemy/zombie_walk1')
         self.actor.x = x 
         self.actor.y = y
-        self.radius = 30
+        self.radius = 10
         self.speed = 2
         self.hp = 50
-        self.damage = 5
+        self.damage = 15
         self.attack_cooldown = 0 
         self.attack_rate = 0.5 
     
@@ -268,7 +266,6 @@ class Zombie:
     
     def draw(self):
         self.actor.draw()
-        #  HP bar above zombie
         bar_width = 40
         bar_height = 5
         hp_ratio = self.hp / 50
@@ -286,6 +283,7 @@ zombies = [
     Zombie(100, 100),
     Zombie(400, 200),
     Zombie(700, 500),
+    Zombie(600, 300),
 ]
 
 
@@ -293,19 +291,25 @@ def draw():
     screen.fill((20, 20, 30))
     
     if game_state == "menu":
-        screen.draw.text('ZOMBIE APOCALYPSE', fontname = 'bloody.ttf', center=(400, 150), fontsize=60, color='red')
+        screen.draw.text('ZOMBIE APOCALYPSE', fontname = 'bloody.ttf', center=(400, 150), fontsize = 60, color = 'red')
         
         screen.draw.filled_rect(btn_start, 'darkred')
-        screen.draw.text('START GAME', center=btn_start.center, fontsize=24, color='white')
+        screen.draw.text('START GAME', center = btn_start.center, fontsize = 24, color = 'white')
         
         screen.draw.filled_rect(btn_music, 'darkgreen' if music_on else 'gray')
         music_text = 'MUSIC: ON' if music_on else 'MUSIC: OFF'
-        screen.draw.text(music_text, center=btn_music.center, fontsize=24, color='white')
+        screen.draw.text(music_text, center = btn_music.center, fontsize = 24, color = 'white')
         
         screen.draw.filled_rect(btn_exit, 'darkblue')
-        screen.draw.text('EXIT', center=btn_exit.center, fontsize=24, color='white')
+        screen.draw.text('EXIT', center = btn_exit.center, fontsize = 24, color='white')
         
     elif game_state == "game":
+        grass_width = grass.width
+        grass_height = grass.height
+        for x in range(0, WIDTH, grass_width):
+            for y in range(0, HEIGHT, grass_height):
+                screen.blit('grass', (x, y))
+        
         player.draw()
         for zombie in zombies:
             zombie.draw()
@@ -313,10 +317,8 @@ def draw():
         screen.draw.filled_rect(Rect((10, 10), (200, 20)), 'darkred')
         hp_width = (player.hp / player.max_hp) * 200
         screen.draw.filled_rect(Rect((10, 10), (hp_width, 20)), 'red')
-        screen.draw.text(f'HP: {player.hp}/{player.max_hp}', (15, 12), fontsize=16, color='white')
-        
-        #  hint
-        screen.draw.text('WASD - move | SPACE - attack | ESC - menu', (10, HEIGHT - 30), fontsize=16, color='gray')
+        screen.draw.text(f'HP: {player.hp}/{player.max_hp}', (15, 12), fontsize = 16, color = 'white')
+        screen.draw.text('WASD - move | SPACE - attack | ESC - menu', (10, HEIGHT - 30), fontsize=16, color = 'gray')
 
     
 def update(dt):
@@ -354,6 +356,7 @@ def reset_game():
         Zombie(100, 100),
         Zombie(400, 200),
         Zombie(700, 500),
+        Zombie(600, 300),
     ]
 
 
@@ -394,7 +397,6 @@ try:
     music.play('background')
     music.set_volume(0.5)
 except:
-    print("Music not available")
     music_on = False
 
 pgzrun.go()
